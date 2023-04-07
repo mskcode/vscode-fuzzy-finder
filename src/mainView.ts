@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { fuzzyFind } from "./find";
+import { findInWorkspace } from "./find";
 
 export class MainView {
   static onlyInstance: MainView | null = null;
@@ -80,10 +80,16 @@ export class MainView {
 
   handleFindInputChangeMessage(message: any) {
     try {
-      const results = fuzzyFind(message.input);
-      this.postMessageToWebView({
-        type: "find-results",
-        results: results,
+      findInWorkspace(message.input, (result, error) => {
+        if (result) {
+          this.postMessageToWebView({
+            type: "find-result",
+            result: result,
+          });
+        }
+        if (error) {
+          console.error(error);
+        }
       });
     } catch (e: any) {
       // FIXME format error message
@@ -165,26 +171,27 @@ function renderContent(content: any) {
         })
       }
 
-      function handleFindResults(results) {
+      function handleFindResult(result) {
         const fileListElement = document.getElementById("file-list");
         const selectedFileContentElement = document.getElementById("selected-file-content");
 
         fileListElement.replaceChildren();
         selectedFileContentElement.replaceChildren();
 
-        results.forEach((result) => {
+        for (let key in result) {
+          const resultFile = result[key];
           const element = document.createElement("p");
-          element.innerHTML = result.filePath;
+          element.innerHTML = resultFile.filePath;
           fileListElement.appendChild(element);
-        });
+        }f
       }
 
       // message handler for events from the VSCode
       window.addEventListener('message', event => {
           const message = event.data;
           switch (message.type) {
-              case 'find-results':
-                  handleFindResults(message.results);
+              case 'find-result':
+                  handleFindResult(message.result);
                   break;
           }
       });
