@@ -32,8 +32,7 @@ export const findInWorkspace = (
   };
 
   console.log(`Executing command: ${searchCommand}`);
-  const childProcess = cp.exec(searchCommand, onExecCompletion);
-  //console.log(`Process exited with code ${childProcess.exitCode}`);
+  cp.exec(searchCommand, onExecCompletion);
 };
 
 const resolveWorkspacePath = (): string => {
