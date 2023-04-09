@@ -6,28 +6,51 @@
     <title>VSCode - Improving Find Extension</title>
     <style>
       * {
-        border: 1px solid black;
+        /* border: 1px solid black; */
         box-sizing: border-box;
       }
+      div.viewport {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 50px);
+        max-height: calc(100vh - 50px);
+      }
+      div.search-results {
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+        justify-content: space-around;
+      }
       div.file-list {
-        float: left;
-        width: 50%;
-        padding: 50px;
+        box-sizing: border-box;
+        flex: 0 0 45%;
       }
       select.file-list {
         width: 100%;
       }
-      .file-content {
-        float: right;
-        width: 50%;
-        padding: 50px;
+      div.file-content {
+        box-sizing: border-box;
+        flex: 0 0 45%;
+        overflow: scroll;
+        white-space: nowrap;
+      }
+      /* https://code.visualstudio.com/api/references/theme-color */
+      span.code {
+        font-family: var(--vscode-editor-font-family);
+        font-size: var(--vscode-editor-font-size);
+      }
+      span.code-context {
+        color: lightgray;
+      }
+      span.code-match {
+        color: greenyellow;
       }
       div.search-bar {
         width: 100%;
       }
       input#search-input {
         display: block;
-        width: calc(100% - 24px);
+        width: 100%;
         margin: auto;
         font-size: 18px;
         font-weight: 600;
@@ -35,56 +58,151 @@
         padding: 10px;
         /* border: 2px solid #4b00ff; */
       }
+      div.info-display {
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+        width: 100%;
+      }
+      div#info-display-hint {
+        visibility: visible;
+        width: 50%;
+      }
+      div#info-display-error {
+        text-align: right;
+        visibility: hidden;
+        width: 50%;
+      }
     </style>
   </head>
   <body onload="onBodyLoad()">
-    <div class="search-bar">
-      <input
-        id="search-input"
-        type="text"
-        oninput="onSearchBarInput(this.value)"
-        onkeydown="onSearchBarKeyDown()"
-      />
-    </div>
-    <div>
-      <div id="file-list" class="file-list">
-        <select
-          id="file-list-selection"
-          size="10"
-          class="file-list"
-          onchange="onFileSelectionChange(this.value)"
-        >
-          <option value="one">one</option>
-          <option value="two">two</option>
-          <option value="three">three</option>
-          <option value="four">four</option>
-          <option value="five">five</option>
-          <option value="six">six</option>
-          <option value="seven">seven</option>
-          <option value="eight">eight</option>
-          <option value="nine">nine</option>
-          <option value="ten">ten</option>
-          <option value="eleven">eleven</option>
-        </select>
+    <div class="viewport">
+      <div class="search-bar">
+        <input
+          id="search-input"
+          type="text"
+          oninput="onSearchBarInput(this.value)"
+          onkeydown="onSearchBarKeyDown()"
+        />
       </div>
-      <div id="selected-file-content" class="file-content">
-        <code>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </code>
+      <div class="info-display">
+        <div id="info-display-hint">
+          <p>3 more letters</p>
+        </div>
+        <div id="info-display-error">
+          <p>Something went wrong</p>
+        </div>
+      </div>
+      <div class="search-results">
+        <div id="file-list" class="file-list">
+          <select
+            id="file-list-selection"
+            size="10"
+            class="file-list"
+            onchange="onFileSelectionChange(this.value)"
+          >
+            <option value="one">one</option>
+            <option value="two">two</option>
+            <option value="three">three</option>
+            <option value="four">four</option>
+            <option value="five">five</option>
+            <option value="six">six</option>
+            <option value="seven">seven</option>
+            <option value="eight">eight</option>
+            <option value="nine">nine</option>
+            <option value="ten">ten</option>
+            <option value="eleven">eleven</option>
+          </select>
+        </div>
+        <div id="selected-file-content" class="file-content">
+          <span class="code-context">25</span><br />
+          <span class="code-context">
+            26 * You can open the full set of our API when you open the file
+            `node_modules/@types/vscode/index.d.ts`. </span
+          ><br />
+          <span class="code-context">27</span><br />
+          <span class="code-match">28 ## Run tests</span><br />
+          <span class="code-context">29</span><br />
+          <span class="code-context">
+            30 * Open the debug viewlet (`Ctrl+Shift+D` or `Cmd+Shift+D` on Mac)
+            and from the launch configuration dropdown pick `Extension Tests`. </span
+          ><br />
+          <span class="code-match">
+            31 * Press `F5` to run the tests in a new window with your extension
+            loaded. </span
+          ><br />
+          <span class="code-match">
+            32 * See the output of the test result in the debug console. </span
+          ><br />
+          <span class="code-match">
+            33 * Make changes to `src/test/suite/extension.test.ts` or create
+            new test files inside the `test/suite` folder. </span
+          ><br />
+          <span class="code-match">
+            34 * The provided test runner will only consider files matching the
+            name pattern `**.test.ts`. </span
+          ><br />
+          <span class="code-match">
+            35 * You can create folders inside the `test` folder to structure
+            your tests any way you want. </span
+          ><br />
+          <span class="code-match">
+            35 * You can create folders inside the `test` folder to structure
+            your tests any way you want. </span
+          ><br />
+          <span class="code-match">
+            35 * You can create folders inside the `test` folder to structure
+            your tests any way you want. </span
+          ><br />
+          <span class="code-match">
+            35 * You can create folders inside the `test` folder to structure
+            your tests any way you want. </span
+          ><br />
+          <span class="code-context">36</span><br />
+          <span class="code-context">37 ## Go further</span><br />
+          <span class="code-context">38</span><br />
+        </div>
       </div>
     </div>
 
     <script>
-      const vscode = acquireVsCodeApi();
-      //const vscode = undefined;
+      const vscode = acquireVsCodeApiOrMock();
 
-      let globalResultCache = null;
+      var globalResultCache = null;
+
+      // message handler for events from the VSCode
+      window.addEventListener("message", handleVSCodeEvent);
+
+      //======================================================================
+      // FUNCTIONS
+      //======================================================================
+
+      function acquireVsCodeApiOrMock() {
+        if (typeof acquireVsCodeApi !== "undefined") {
+          return acquireVsCodeApi();
+        }
+
+        const mock = {};
+        mock.postMessage = (msg) => {};
+        mock.getState = () => {
+          return undefined;
+        };
+        mock.setState = (data) => {};
+        return mock;
+      }
+
+      function handleVSCodeEvent(event) {
+        // has `window` property as implicitly bound context
+        const message = event.data;
+        switch (message.type) {
+          case "find-result":
+            handleFindResult(message.result);
+            break;
+          default:
+            console.log(`handleVSCodeEvent(): event=${JSON.stringify(event)}`);
+            break;
+        }
+      }
 
       function onBodyLoad() {
         document.getElementById("search-input").focus();
@@ -127,10 +245,12 @@
             selectedIndex =
               selectedIndex < 0 ? element.length - 1 : selectedIndex;
             element.selectedIndex = selectedIndex;
+            event.preventDefault(); // prevent search bar from handling the input
             break;
           case KEY_DOWN:
             element.selectedIndex =
               (element.selectedIndex + 1) % element.length;
+            event.preventDefault(); // prevent search bar from handling the input
             break;
           default:
             // do nothing
@@ -154,10 +274,14 @@
         const parentElement = document.getElementById("selected-file-content");
         parentElement.replaceChildren();
 
-        const childElement = document.createElement("code");
-        childElement.innerHTML = JSON.stringify(resultFile.lines); // FIXME
-
-        parentElement.appendChild(childElement);
+        for (let line of resultFile.lines) {
+          const childElement = document.createElement("span");
+          childElement.className =
+            line.type === "match" ? "code code-match" : "code code-context";
+          childElement.innerHTML = `${line.lineNumber} ${line.content}`;
+          parentElement.appendChild(childElement);
+          parentElement.appendChild(document.createElement("br"));
+        }
       }
 
       function handleFindResult(result) {
@@ -184,16 +308,6 @@
         element.selectedIndex = 0;
         onFileSelectionChange(element.value);
       }
-
-      // message handler for events from the VSCode
-      window.addEventListener("message", (event) => {
-        const message = event.data;
-        switch (message.type) {
-          case "find-result":
-            handleFindResult(message.result);
-            break;
-        }
-      });
     </script>
   </body>
 </html>
