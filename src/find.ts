@@ -126,7 +126,7 @@ const parseRgOutput = (rgOutput: string): FindResult => {
 const mapContextTypeLine = (obj: any): FindResultLine => {
   return {
     type: obj.type,
-    lineNumber: obj.data.lines["line_number"] as number,
+    lineNumber: obj.data["line_number"] as number,
     content: obj.data.lines.text,
   };
 };
@@ -158,7 +158,7 @@ const mapContextTypeLine = (obj: any): FindResultLine => {
 const mapMatchTypeLine = (obj: any): FindResultLine => {
   return {
     type: obj.type,
-    lineNumber: obj.data.lines["line_number"] as number,
+    lineNumber: obj.data["line_number"] as number,
     content: obj.data.lines.text,
   };
 };
