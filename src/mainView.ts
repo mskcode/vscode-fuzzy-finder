@@ -81,15 +81,14 @@ export class MainView {
 
   handleFindInputChangeMessage(message: any) {
     try {
-      findInWorkspace(message.input, (result, error) => {
-        if (result) {
+      findInWorkspace(message.input, (result) => {
+        if (result.ok) {
           this.postMessageToWebView({
             type: "find-result",
-            result: result,
+            result: result.value,
           });
-        }
-        if (error) {
-          console.error(error);
+        } else {
+          console.error(result.error);
         }
       });
     } catch (e: any) {
