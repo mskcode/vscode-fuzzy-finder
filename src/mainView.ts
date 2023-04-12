@@ -64,8 +64,8 @@ export class MainView {
               this.handleFindInputChangeMessage(message);
               break;
 
-            case "file-list-selection-change":
-              // TODO implement me
+            case "file-selected":
+              this.handleFileSelectedMessage(message);
               break;
           }
         },
@@ -93,6 +93,19 @@ export class MainView {
         },
       });
     });
+  }
+
+  handleFileSelectedMessage(message: any) {
+    const filePath: string = message.path;
+    console.log(`Selected file path: ${filePath}`);
+
+    // open (or make visible) selected file
+    vscode.workspace.openTextDocument(filePath).then((document) => {
+      vscode.window.showTextDocument(document);
+    });
+
+    // close the webview
+    this.webViewPanel?.dispose();
   }
 
   postMessageToWebView(message: any) {
