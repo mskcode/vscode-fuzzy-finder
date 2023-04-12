@@ -1,5 +1,6 @@
 import { Result } from "./result";
 import { Ripgrep } from "./ripgrep";
+import { enumerateSearchPaths } from "./workspace";
 
 export type FindResultHandler = (
   result: Result<FindResult | undefined>
@@ -9,20 +10,11 @@ export const findInWorkspace = (
   input: string,
   onFindResult: FindResultHandler
 ) => {
-  const ripgrep = Ripgrep.new();
-  const searchPaths = resolveSearchPaths();
-  ripgrep.find(input, searchPaths, onFindResult);
-};
+  const searchPaths = enumerateSearchPaths();
+  console.log(`findInWorkspace(): searchPaths=[${searchPaths.join(",")}]`);
 
-const resolveSearchPaths = (): string[] => {
-  return ["/home/samuli/dev/mskcode/vscode-fuzzy-finder"];
-  /* const paths = vscode.workspace.workspaceFolders?.map(
-    (folder) => folder.uri.path
-  );
-  if (!paths) {
-    throw Error("Could not resolve workspace path");
-  }
-  return paths[0]; */
+  const ripgrep = Ripgrep.new();
+  ripgrep.find(input, searchPaths, onFindResult);
 };
 
 export type FindResultLine = {
