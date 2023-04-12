@@ -80,22 +80,19 @@ export class MainView {
   }
 
   handleFindInputChangeMessage(message: any) {
-    try {
-      findInWorkspace(message.input, (result) => {
-        if (result.ok) {
+    findInWorkspace(message.input, (result) => {
+      result.match({
+        ok: (value) => {
           this.postMessageToWebView({
             type: "find-result",
-            result: result.value,
+            result: value,
           });
-        } else {
-          console.error(result.error);
-        }
+        },
+        error: (error) => {
+          console.error(error);
+        },
       });
-    } catch (e: any) {
-      // FIXME format error message
-      console.error(e);
-      vscode.window.showErrorMessage(JSON.stringify(e));
-    }
+    });
   }
 
   postMessageToWebView(message: any) {

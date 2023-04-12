@@ -1,5 +1,6 @@
 import * as cp from "child_process";
 import { FindResult, FindResultHandler, FindResultLine } from "./find";
+import { Result } from "./result";
 
 /**
  * Wrapper for ripgrep.
@@ -35,21 +36,12 @@ export class Ripgrep {
         if (error.code === 1) {
           // ripgrep exists with code 1 when no results are found;
           // other exit codes are other (real) errors
-          onFindResult({
-            ok: true,
-            value: {},
-          });
+          onFindResult(Result.ofOk({}));
         } else {
-          onFindResult({
-            ok: false,
-            error: error,
-          });
+          onFindResult(Result.ofError(error));
         }
       } else {
-        onFindResult({
-          ok: true,
-          value: parseRgOutput(stdout),
-        });
+        onFindResult(Result.ofOk(parseRgOutput(stdout)));
       }
     };
 

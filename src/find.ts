@@ -1,7 +1,9 @@
 import { Result } from "./result";
 import { Ripgrep } from "./ripgrep";
 
-export type FindResultHandler = (result: Result<FindResult>) => void;
+export type FindResultHandler = (
+  result: Result<FindResult | undefined>
+) => void;
 
 export const findInWorkspace = (
   input: string,
