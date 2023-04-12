@@ -18,7 +18,7 @@ export class Ripgrep {
 
   static new(
     binaryPath: string = "/usr/bin/rg",
-    options: string = "--context=3 --json"
+    options: string = "--ignore-case --context=3 --json"
   ): Ripgrep {
     return new Ripgrep(binaryPath, options);
   }
