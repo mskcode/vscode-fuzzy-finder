@@ -38,6 +38,7 @@
       span.code {
         font-family: var(--vscode-editor-font-family);
         font-size: var(--vscode-editor-font-size);
+        white-space: pre;
       }
       span.code-context {
         color: lightgray;
@@ -277,16 +278,45 @@
 
       function updateFileContent(resultFile) {
         const parentElement = document.getElementById("selected-file-content");
+
+        // clear all content first
         parentElement.replaceChildren();
 
+        let previousLineNumber = 0;
         for (let line of resultFile.lines) {
-          const childElement = document.createElement("span");
-          childElement.className =
+          // render a separator line if the difference between current and
+          // previous line numbers is more than 1
+          if (
+            previousLineNumber > 0 &&
+            line.lineNumber - previousLineNumber > 1
+          ) {
+            renderLineContent("---\n", parentElement, "code code-context");
+          }
+
+          const className =
             line.type === "match" ? "code code-match" : "code code-context";
-          childElement.innerHTML = `${line.lineNumber} ${line.content}`;
-          parentElement.appendChild(childElement);
-          parentElement.appendChild(document.createElement("br"));
+          renderLineContent(
+            `${line.lineNumber} ${line.content}`,
+            parentElement,
+            className
+          );
+
+          previousLineNumber = line.lineNumber;
         }
+      }
+
+      function renderLineContent(str, parentElement, className) {
+        const childElement = document.createElement("span");
+        childElement.className = className;
+        childElement.innerHTML = escapeHtml(str);
+
+        parentElement.appendChild(childElement);
+      }
+
+      function escapeHtml(str) {
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(str));
+        return p.innerHTML;
       }
 
       function onFileSelectionOpen(selectedFilePath) {
