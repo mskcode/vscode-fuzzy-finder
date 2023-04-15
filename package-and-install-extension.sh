@@ -19,6 +19,10 @@ package_extension
 readonly extension_path=$(resolve_extension_path)
 install_extension ${extension_path}
 
-code . &
-readonly vscode_pid=$!
-echo "VSCode started as PID ${vscode_pid}"
+cat <<EOF
+
+  Installed extension '${extension_path}' locally.
+
+  Remember to restart VSCode IDE to have the new extension version loaded.
+
+EOF
