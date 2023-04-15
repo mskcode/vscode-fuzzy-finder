@@ -59,15 +59,15 @@ export class MainView {
       // message handler for webview messages
       this.webViewPanel.webview.onDidReceiveMessage(
         (message) => {
-          switch (message.type) {
-            case "find-input-change":
-              this.handleFindInputChangeMessage(message);
-              break;
+          const messageHandlerMap: { [key: string]: (message: any) => void } = {
+            "find-input-change": this.handleFindInputChangeMessage.bind(this),
+            "file-selected": this.handleFileSelectedMessage.bind(this),
+            "close-extension-view":
+              this.handleCloseExtensionViewMessage.bind(this),
+          };
 
-            case "file-selected":
-              this.handleFileSelectedMessage(message);
-              break;
-          }
+          const messageHandler = messageHandlerMap[message.type];
+          messageHandler(message);
         },
         undefined,
         this.context.subscriptions
@@ -76,6 +76,12 @@ export class MainView {
       // webview panel already exists so display it
       console.log("revealing existing webview panel");
       this.webViewPanel.reveal();
+    }
+  }
+
+  public close() {
+    if (this.webViewPanel) {
+      this.webViewPanel.dispose();
     }
   }
 
@@ -89,6 +95,7 @@ export class MainView {
           });
         },
         error: (error) => {
+          // FIXME maybe some better error handling
           console.error(error);
         },
       });
@@ -104,8 +111,11 @@ export class MainView {
       vscode.window.showTextDocument(document);
     });
 
-    // close the webview
-    this.webViewPanel?.dispose();
+    this.close();
+  }
+
+  handleCloseExtensionViewMessage(message: any) {
+    this.close();
   }
 
   postMessageToWebView(message: any) {
