@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VSCode - Improving Find Extension</title>
     <style>
+      /* References for styling VSCode webviews
+      https://code.visualstudio.com/api/extension-guides/webview#theming-webview-content
+      https://code.visualstudio.com/api/references/theme-color
+      */
       * {
         /* border: 1px solid black; */
         box-sizing: border-box;
@@ -12,29 +16,42 @@
       div.viewport {
         display: flex;
         flex-direction: column;
-        height: calc(100vh - 50px);
-        max-height: calc(100vh - 50px);
+        /* 120 px seems to create enough "safe-space" so that content doesn't
+        get pushed outside of the viewport */
+        height: calc(100vh - 120px);
+        max-height: calc(100vh - 120px);
       }
       div.search-results {
         display: flex;
         flex-direction: row;
         flex-grow: 1;
         justify-content: space-around;
+        max-height: 100%;
       }
       div.file-list {
-        box-sizing: border-box;
         flex: 0 0 45%;
       }
       select.file-list {
         width: 100%;
+        height: 100%;
+        background-color: var(--vscode-list-focus-background);
+        color: var(--vscode-foreground);
+        border-left: 0;
+        border-top: 0;
+        border-bottom: 0;
+      }
+      select.file-list > option:checked {
+        background-color: var(--vscode-inputOption-activeBackground);
+        color: var(--vscode-inputOption-activeForeground);
+        /* background-color: #ff0000;
+        color: #00ff00; */
       }
       div.file-content {
-        box-sizing: border-box;
         flex: 0 0 45%;
-        overflow: scroll;
+        overflow: auto;
         white-space: nowrap;
+        max-height: 100%;
       }
-      /* https://code.visualstudio.com/api/references/theme-color */
       span.code {
         font-family: var(--vscode-editor-font-family);
         font-size: var(--vscode-editor-font-size);
@@ -101,68 +118,9 @@
             size="10"
             class="file-list"
             onchange="onFileSelectionChange(this.value)"
-          >
-            <option value="one">one</option>
-            <option value="two">two</option>
-            <option value="three">three</option>
-            <option value="four">four</option>
-            <option value="five">five</option>
-            <option value="six">six</option>
-            <option value="seven">seven</option>
-            <option value="eight">eight</option>
-            <option value="nine">nine</option>
-            <option value="ten">ten</option>
-            <option value="eleven">eleven</option>
-          </select>
+          ></select>
         </div>
-        <div id="selected-file-content" class="file-content">
-          <span class="code-context">25</span><br />
-          <span class="code-context">
-            26 * You can open the full set of our API when you open the file
-            `node_modules/@types/vscode/index.d.ts`. </span
-          ><br />
-          <span class="code-context">27</span><br />
-          <span class="code-match">28 ## Run tests</span><br />
-          <span class="code-context">29</span><br />
-          <span class="code-context">
-            30 * Open the debug viewlet (`Ctrl+Shift+D` or `Cmd+Shift+D` on Mac)
-            and from the launch configuration dropdown pick `Extension Tests`. </span
-          ><br />
-          <span class="code-match">
-            31 * Press `F5` to run the tests in a new window with your extension
-            loaded. </span
-          ><br />
-          <span class="code-match">
-            32 * See the output of the test result in the debug console. </span
-          ><br />
-          <span class="code-match">
-            33 * Make changes to `src/test/suite/extension.test.ts` or create
-            new test files inside the `test/suite` folder. </span
-          ><br />
-          <span class="code-match">
-            34 * The provided test runner will only consider files matching the
-            name pattern `**.test.ts`. </span
-          ><br />
-          <span class="code-match">
-            35 * You can create folders inside the `test` folder to structure
-            your tests any way you want. </span
-          ><br />
-          <span class="code-match">
-            35 * You can create folders inside the `test` folder to structure
-            your tests any way you want. </span
-          ><br />
-          <span class="code-match">
-            35 * You can create folders inside the `test` folder to structure
-            your tests any way you want. </span
-          ><br />
-          <span class="code-match">
-            35 * You can create folders inside the `test` folder to structure
-            your tests any way you want. </span
-          ><br />
-          <span class="code-context">36</span><br />
-          <span class="code-context">37 ## Go further</span><br />
-          <span class="code-context">38</span><br />
-        </div>
+        <div id="selected-file-content" class="file-content"></div>
       </div>
     </div>
 
@@ -193,14 +151,12 @@
       }
 
       function handleVSCodeEvent(event) {
-        // has `window` property as implicitly bound context
         const message = event.data;
         switch (message.type) {
           case "find-result":
             handleFindResult(message.result);
             break;
           default:
-            console.log(`handleVSCodeEvent(): event=${JSON.stringify(event)}`);
             break;
         }
       }
@@ -239,25 +195,17 @@
 
         console.log(`onSearchBarKeyDown(): keyCode=${event.keyCode}`);
 
-        // select.selectedIndex starts at 0;
-        // -1 would deselect all options (if any)
-        const element = document.getElementById("file-list-selection");
         switch (event.keyCode) {
           case KEY_UP:
-            let selectedIndex = element.selectedIndex - 1;
-            selectedIndex =
-              selectedIndex < 0 ? element.length - 1 : selectedIndex;
-            element.selectedIndex = selectedIndex;
+            changeFileSelection(true);
             event.preventDefault(); // prevent search bar from handling the input
             break;
           case KEY_DOWN:
-            element.selectedIndex =
-              (element.selectedIndex + 1) % element.length;
+            changeFileSelection(false);
             event.preventDefault(); // prevent search bar from handling the input
             break;
           case KEY_ENTER:
-            const selectedFilePath = element.value;
-            onFileSelectionOpen(selectedFilePath);
+            onFileSelectionOpen();
             break;
           case KEY_ESCAPE:
             onCloseExtensionView();
@@ -266,6 +214,22 @@
             // do nothing
             break;
         }
+      }
+
+      function changeFileSelection(moveUp) {
+        // select.selectedIndex starts at 0;
+        // -1 would deselect all options (if any)
+        const element = document.getElementById("file-list-selection");
+        let newSelectedIndex = 0;
+        if (moveUp) {
+          newSelectedIndex = element.selectedIndex - 1;
+          newSelectedIndex =
+            newSelectedIndex < 0 ? element.length - 1 : newSelectedIndex;
+        } else {
+          newSelectedIndex = (element.selectedIndex + 1) % element.length;
+        }
+
+        element.selectedIndex = newSelectedIndex;
 
         // changing the selection with JS does not trigger onchange event;
         // we simulate it with this
@@ -323,7 +287,10 @@
         return p.innerHTML;
       }
 
-      function onFileSelectionOpen(selectedFilePath) {
+      function onFileSelectionOpen() {
+        const element = document.getElementById("file-list-selection");
+        const selectedFilePath = element.value;
+
         console.log(
           `onFileSelectionOpen(): selectedFilePath=${selectedFilePath}`
         );
