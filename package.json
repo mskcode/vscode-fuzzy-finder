@@ -22,6 +22,14 @@
         "title": "find",
         "category": "Fuzzy Finder"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-fuzzy-finder.find",
+        "key": "",
+        "mac": "",
+        "when": "true"
+      }
     ]
   },
   "scripts": {

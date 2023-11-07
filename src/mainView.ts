@@ -12,7 +12,7 @@ export class MainView {
 
   constructor(context: vscode.ExtensionContext) {
     this.type = "find";
-    this.title = "Fuzzy Finder";
+    this.title = "Find";
     this.context = context;
     this.webViewPanel = null;
   }
@@ -30,53 +30,64 @@ export class MainView {
   }
 
   public createAndShow() {
-    if (this.webViewPanel === null) {
-      // create a new webview panel (tab)
-      console.log("creating new webview panel");
-      this.webViewPanel = vscode.window.createWebviewPanel(
-        this.type,
-        this.title,
-        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-        {
-          enableScripts: true,
-        }
-      );
-
-      // on webview (tab) close
-      this.webViewPanel.onDidDispose(
-        () => {
-          // user has closed the webview
-          console.log("disposing webview");
-          this.webViewPanel = null;
-        },
-        null,
-        this.context.subscriptions
-      );
-
-      // set the webview content
-      this.webViewPanel.webview.html = mainViewHtml;
-
-      // message handler for webview messages
-      this.webViewPanel.webview.onDidReceiveMessage(
-        (message) => {
-          const messageHandlerMap: { [key: string]: (message: any) => void } = {
-            "find-input-change": this.handleFindInputChangeMessage.bind(this),
-            "file-selected": this.handleFileSelectedMessage.bind(this),
-            "close-extension-view":
-              this.handleCloseExtensionViewMessage.bind(this),
-          };
-
-          const messageHandler = messageHandlerMap[message.type];
-          messageHandler(message);
-        },
-        undefined,
-        this.context.subscriptions
-      );
-    } else {
+    if (this.webViewPanel !== null) {
       // webview panel already exists so display it
       console.log("revealing existing webview panel");
       this.webViewPanel.reveal();
+      return;
     }
+
+    // create a new webview panel (tab)
+    console.log("creating new webview panel");
+    this.webViewPanel = vscode.window.createWebviewPanel(
+      this.type,
+      this.title,
+      {
+        viewColumn: vscode.ViewColumn.One,
+        preserveFocus: false,
+      },
+      {
+        enableScripts: true, // need to enable scripts in webview
+      }
+    );
+
+    // on webview (tab) close
+    this.webViewPanel.onDidDispose(
+      () => {
+        // user has closed the webview
+        console.log("disposing webview");
+        this.webViewPanel = null;
+      },
+      this,
+      this.context.subscriptions
+    );
+
+    // set the webview content
+    //
+    // FIXME when a webview panel is moved into a background tab, it becomes
+    //   hidden. It is not destroyed however. VS Code will automatically
+    //   restore the webview's content from webview.html when the panel is
+    //   brought to the foreground again. In our case this means that what ever
+    //   the state of the page was before, it has now been reset. Can something
+    //   be done about this?
+    this.webViewPanel.webview.html = mainViewHtml;
+
+    // message handler for webview messages
+    this.webViewPanel.webview.onDidReceiveMessage(
+      (message) => {
+        const messageHandlerMap: { [key: string]: (message: any) => void } = {
+          "find-input-change": this.handleFindInputChangeMessage.bind(this),
+          "file-selected": this.handleFileSelectedMessage.bind(this),
+          "close-extension-view":
+            this.handleCloseExtensionViewMessage.bind(this),
+        };
+
+        const messageHandler = messageHandlerMap[message.type];
+        messageHandler(message);
+      },
+      this,
+      this.context.subscriptions
+    );
   }
 
   public close() {

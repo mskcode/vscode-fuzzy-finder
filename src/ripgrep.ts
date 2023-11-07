@@ -41,7 +41,7 @@ export class Ripgrep {
           onFindResult(Result.ofError(error));
         }
       } else {
-        onFindResult(Result.ofOk(parseRgOutput(stdout)));
+        onFindResult(Result.ofOk(parseRgOutput(stdout, paths)));
       }
     };
 
@@ -50,16 +50,10 @@ export class Ripgrep {
   }
 }
 
-const parseRgOutput = (rgOutput: string): FindResult => {
+const parseRgOutput = (rgOutput: string, searchPaths: string[]): FindResult => {
   // ripgrep outputs the json lines in a natural order where matches within a
   // single file are subsequent
-  const jsonLines = rgOutput.split("\n");
-  const arr: any[] = [];
-  for (let jsonLine of jsonLines) {
-    if (jsonLine.trim().length > 0) {
-      arr.push(JSON.parse(jsonLine));
-    }
-  }
+  const arr: any[] = deserializeRgOutput(rgOutput);
 
   const result: FindResult = {};
   for (let obj of arr) {
@@ -71,6 +65,7 @@ const parseRgOutput = (rgOutput: string): FindResult => {
         if (!result.hasOwnProperty(filePath)) {
           result[filePath] = {
             filePath: filePath,
+            shortFilePath: "",
             lines: [],
           };
         }
@@ -88,12 +83,23 @@ const parseRgOutput = (rgOutput: string): FindResult => {
         // do nothing for now
         break;
       default:
-        console.error(`Unknown ripgrep data type '${obj.type}'`);
+        console.warn(`Unknown ripgrep data type '${obj.type}'`);
         break;
     }
   }
 
   return result;
+};
+
+const deserializeRgOutput = (rgOutput: string): any[] => {
+  const jsonLines = rgOutput.split("\n");
+  const arr: any[] = [];
+  for (let jsonLine of jsonLines) {
+    if (jsonLine.trim().length > 0) {
+      arr.push(JSON.parse(jsonLine));
+    }
+  }
+  return arr;
 };
 
 /*

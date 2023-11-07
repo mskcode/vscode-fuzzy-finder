@@ -1,21 +1,18 @@
+// https://www.typescriptlang.org/tsconfig
+// this is a jsonc file, so comments are allowed
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "ES2020",
-		"outDir": "out",
-		"lib": [
-			"ES2020"
-		],
-		"sourceMap": true,
-		"rootDir": "src",
-		"strict": true,   /* enable all strict type-checking options */
-		"typeRoots": [
-			".src/typings.d.ts",
-      		"./node_modules/@types"
-		]
-		/* Additional Checks */
-		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
-		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
-		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
-	}
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2020",
+    "outDir": "out",
+    "lib": ["ES2020"],
+    "sourceMap": true,
+    "rootDir": "src",
+    "strict": true, // enable all strict type-checking options
+    "typeRoots": [".src/typings.d.ts", "./node_modules/@types"],
+    // additional checks
+    "noImplicitReturns": true, // report error when not all code paths in function return a value
+    "noFallthroughCasesInSwitch": true // report errors for fallthrough cases in switch statement
+    // "noUnusedParameters": true,  // report errors on unused parameters
+  }
 }
