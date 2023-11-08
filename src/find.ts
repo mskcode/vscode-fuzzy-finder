@@ -2,10 +2,16 @@ import { Result } from "./result";
 import { Ripgrep } from "./ripgrep";
 import { enumerateSearchPaths } from "./workspace";
 
+export type FindResultMatchRange = {
+  start: number;
+  end: number;
+};
+
 export type FindResultLine = {
   type: "context" | "match";
   lineNumber: number;
   content: string;
+  matchRanges?: FindResultMatchRange[];
 };
 
 export type FindResultFile = {

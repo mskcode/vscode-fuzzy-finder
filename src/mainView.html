@@ -61,6 +61,9 @@
       span.code-match {
         color: greenyellow;
       }
+      span.code-match-highlight {
+        color: orangered;
+      }
       div.search-bar {
         width: 100%;
         margin-top: 10px;
@@ -261,13 +264,11 @@
             renderLineContent("---\n", parentElement, "code code-context");
           }
 
-          const className =
-            line.type === "match" ? "code code-match" : "code code-context";
-          renderLineContent(
-            `${line.lineNumber} ${line.content}`,
-            parentElement,
-            className
-          );
+          if (line.type === "match") {
+            renderMatchLine(line, parentElement);
+          } else {
+            renderNormalLine(line, parentElement);
+          }
 
           previousLineNumber = line.lineNumber;
         }
@@ -281,10 +282,49 @@
         parentElement.appendChild(childElement);
       }
 
-      function escapeHtml(str) {
-        const p = document.createElement("p");
-        p.appendChild(document.createTextNode(str));
-        return p.innerHTML;
+      function renderNormalLine(line, parentElement) {
+        const innerHtml = `${line.lineNumber} ${line.content}`;
+
+        const childElement = document.createElement("span");
+        childElement.className = "code code-context";
+        childElement.innerHTML = escapeHtml(innerHtml);
+        parentElement.appendChild(childElement);
+      }
+
+      function renderMatchLine(line, parentElement) {
+        let cursor = 0;
+        let innerHtml = `${line.lineNumber} `;
+        for (let matchRange of line.matchRanges) {
+          const plainText = line.content.substring(cursor, matchRange.start);
+          const highlightedText = line.content.substring(
+            matchRange.start,
+            matchRange.end
+          );
+          cursor = matchRange.end;
+
+          const escapedPlainText = escapeHtml(plainText);
+          const escapedHighlightedMe = escapeHtml(highlightedText);
+
+          innerHtml += `${escapedPlainText}<span class="code-match-highlight">${escapedHighlightedMe}</span>`;
+        }
+
+        // copy rest of the line
+        const restOfLine = line.content.substring(cursor);
+        innerHtml += escapeHtml(restOfLine);
+
+        const childElement = document.createElement("span");
+        childElement.className = "code code-match";
+        childElement.innerHTML = innerHtml;
+        parentElement.appendChild(childElement);
+      }
+
+      function escapeHtml(unsafe) {
+        return unsafe
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
       function onFileSelectionOpen() {

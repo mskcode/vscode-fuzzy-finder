@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import * as vscode from "vscode"; // https://code.visualstudio.com/api/references/vscode-api
 
 /**
@@ -14,7 +15,9 @@ export function enumerateSearchPaths(): string[] {
 function enumerateOpenWorkspacePaths(): string[] {
   const maybeWorkspaceFolders = vscode.workspace.workspaceFolders;
   if (maybeWorkspaceFolders) {
-    return maybeWorkspaceFolders.map((folder) => folder.uri.fsPath);
+    return maybeWorkspaceFolders
+      .map((folder) => folder.uri.fsPath)
+      .filter((path) => fs.existsSync(path));
   }
   return [];
 }

@@ -155,6 +155,12 @@ const mapMatchTypeLine = (obj: any): FindResultLine => {
     type: obj.type,
     lineNumber: obj.data["line_number"] as number,
     content: obj.data.lines.text,
+    matchRanges: obj.data.submatches.map((submatch: any) => {
+      return {
+        start: submatch.start,
+        end: submatch.end,
+      };
+    }),
   };
 };
 

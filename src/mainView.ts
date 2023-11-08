@@ -100,10 +100,13 @@ export class MainView {
     findInWorkspace(message.input, (result) => {
       result.match({
         ok: (value) => {
-          this.postMessageToWebView({
-            type: "find-result",
-            result: value,
-          });
+          // value cannot be undefined, but TypeScript doesn't know that
+          if (value !== undefined && Object.keys(value).length > 0) {
+            this.postMessageToWebView({
+              type: "find-result",
+              result: value,
+            });
+          }
         },
         error: (error) => {
           // FIXME maybe some better error handling

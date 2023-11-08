@@ -32,6 +32,7 @@ const config = {
     vscode: "commonjs vscode",
     // eslint-disable-next-line @typescript-eslint/naming-convention
     child_process: "child_process",
+    fs: "fs",
   },
   resolve: {
     // support reading TypeScript and JavaScript files
