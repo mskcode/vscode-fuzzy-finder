@@ -378,7 +378,7 @@
           const resultFile = result[key];
           const childElement = document.createElement("option");
           childElement.value = resultFile.filePath;
-          childElement.innerHTML = resultFile.filePath;
+          childElement.innerHTML = resultFile.shortFilePath;
           parentElement.appendChild(childElement);
         }
       }

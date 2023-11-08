@@ -1,4 +1,5 @@
 import * as cp from "child_process";
+import * as fs from "fs";
 import { FindResult, FindResultHandler, FindResultLine } from "./find";
 import { Result } from "./result";
 
@@ -34,7 +35,7 @@ export class Ripgrep {
     ) => {
       if (error) {
         if (error.code === 1) {
-          // ripgrep exists with code 1 when no results are found;
+          // ripgrep exits with code 1 when no results are found;
           // other exit codes are other (real) errors
           onFindResult(Result.ofOk({}));
         } else {
@@ -65,7 +66,7 @@ const parseRgOutput = (rgOutput: string, searchPaths: string[]): FindResult => {
         if (!result.hasOwnProperty(filePath)) {
           result[filePath] = {
             filePath: filePath,
-            shortFilePath: "",
+            shortFilePath: shortenFilePath(filePath, searchPaths),
             lines: [],
           };
         }
@@ -89,6 +90,22 @@ const parseRgOutput = (rgOutput: string, searchPaths: string[]): FindResult => {
   }
 
   return result;
+};
+
+const shortenFilePath = (filePath: string, searchPaths: string[]): string => {
+  for (let searchPath of searchPaths) {
+    // skip non-directories
+    if (!fs.lstatSync(searchPath).isDirectory()) {
+      continue;
+    }
+
+    if (filePath.startsWith(searchPath)) {
+      return filePath.substring(searchPath.length + 1); // +1 for the slash
+    }
+  }
+
+  // couldn't shorten the path
+  return filePath;
 };
 
 const deserializeRgOutput = (rgOutput: string): any[] => {
