@@ -103,14 +103,22 @@ export class MainView {
           // value cannot be undefined, but TypeScript doesn't know that
           if (value !== undefined && Object.keys(value).length > 0) {
             this.postMessageToWebView({
-              type: "find-result",
+              type: "find-results",
               result: value,
+            });
+          } else {
+            // no results found
+            this.postMessageToWebView({
+              type: "no-results",
             });
           }
         },
         error: (error) => {
-          // FIXME maybe some better error handling
           console.error(error);
+          this.postMessageToWebView({
+            type: "find-error",
+            error: error,
+          });
         },
       });
     });
